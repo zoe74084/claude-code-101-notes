@@ -10,9 +10,9 @@ Also patches source attribution into both HTML files.
 import re, subprocess, os, sys
 
 BASE = "/Users/ding/Desktop/Claude code 101/handouts"
-SRC_HTML  = f"{BASE}/Claude-Code-101-學習筆記.html"
-ELEC_HTML = f"{BASE}/Claude-Code-101-電子版.html"
-PDF_OUT   = f"{BASE}/Claude-Code-101-學習筆記.pdf"
+SRC_HTML  = f"{BASE}/Claude-Code-101-notes.html"
+ELEC_HTML = f"{BASE}/Claude-Code-101-web.html"
+PDF_OUT   = f"{BASE}/Claude-Code-101-notes.pdf"
 CHROME    = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
 PLAYLIST  = "https://youtube.com/playlist?list=PLmWCw1CzcFilebjK89WLb5cAvM8K0cLB3&si=6K86NWePoZl9vmu5"
 
