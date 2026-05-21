@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>03 | How Claude Code Works</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", sans-serif; background: #f5f5f0; color: #1a1a1a; font-size: 15px; line-height: 1.7; }
+  .page { max-width: 860px; margin: 0 auto; padding: 40px 32px; background: #fff; min-height: 100vh; }
+  .course-tag { font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: #b45309; background: #fef3c7; padding: 3px 10px; border-radius: 99px; display: inline-block; margin-bottom: 12px; }
+  h1 { font-size: 26px; font-weight: 800; color: #111; border-bottom: 3px solid #d97706; padding-bottom: 10px; margin-bottom: 6px; }
+  .subtitle { font-size: 13px; color: #888; margin-bottom: 32px; }
+  h2 { font-size: 15px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #b45309; margin: 28px 0 12px; display: flex; align-items: center; gap: 8px; }
+  h2::before { content: ""; display: block; width: 4px; height: 16px; background: #d97706; border-radius: 2px; }
+  h3 { font-size: 14px; font-weight: 700; color: #333; margin: 16px 0 6px; }
+  ol, ul { padding-left: 20px; }
+  li { margin-bottom: 6px; }
+  li strong { color: #111; }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 14px; }
+  th { background: #fef3c7; color: #92400e; font-weight: 700; padding: 8px 12px; text-align: left; border: 1px solid #fde68a; }
+  td { padding: 7px 12px; border: 1px solid #e5e7eb; vertical-align: top; }
+  tr:nth-child(even) td { background: #fffbeb; }
+  pre, code { background: #f4f4f0; font-family: "SF Mono", "Fira Code", monospace; font-size: 13px; border-radius: 4px; }
+  pre { padding: 14px 16px; overflow-x: auto; margin: 10px 0; border-left: 3px solid #d97706; line-height: 1.9; }
+  code { padding: 1px 5px; }
+  .notes-section { margin-top: 32px; border-top: 2px dashed #d97706; padding-top: 20px; }
+  .note-line { border-bottom: 1px solid #e5e7eb; height: 36px; }
+  .tag-en { font-size: 11px; color: #999; font-weight: 400; margin-left: 6px; }
+  @media print { body { background: #fff; font-size: 13px; } .page { padding: 20px; } }
+</style>
+</head>
+<body>
+<div class="page">
+  <span class="course-tag">Claude Code 101</span>
+  <h1>03 | How Claude Code Works<span class="tag-en">Claude Code 如何運作</span></h1>
+  <div class="subtitle">Lesson 3 of 9</div>
+
+  <h2>本節重點 <span class="tag-en">Key Takeaways</span></h2>
+  <ol>
+    <li><strong>Agentic Loop（代理循環）</strong>：Prompt → 收集情境 → 呼叫模型 → 執行行動 → 驗證結果 → 未達標則循環。</li>
+    <li><strong>Tools（工具）</strong> 是 Agent 的核心骨架，讓 Claude 能「做事」而非只輸出文字。</li>
+    <li>情境視窗接近上限時，Claude 會自動 <strong>compact（壓縮）</strong>，可能遺失部分細節。</li>
+    <li>三種許可模式：預設（每次詢問）、Auto Accept（自動接受編輯）、Plan Mode（唯讀規劃）。</li>
+    <li>Claude Code 使用<strong>語意搜尋（Semantic Search）</strong>判斷何時該呼叫哪個工具。</li>
+  </ol>
+
+  <h2>Agentic Loop 代理循環</h2>
+  <pre>使用者輸入 Prompt
+       ↓
+收集所需情境 (Context)
+       ↓
+呼叫 LLM（回傳文字或工具呼叫）
+       ↓
+執行行動（編輯檔案、執行指令…）
+       ↓
+驗證結果
+       ↓
+達標？→ Yes → 等待下一個 Prompt
+       → No  → 回到循環頂端</pre>
+
+  <h2>三種許可模式 <span class="tag-en">Permission Modes</span></h2>
+  <table>
+    <tr><th>模式</th><th>說明</th><th>切換方式</th></tr>
+    <tr><td><strong>Default 預設</strong></td><td>每次操作前詢問許可</td><td>預設狀態</td></tr>
+    <tr><td><strong>Auto Accept 自動接受</strong></td><td>自動接受檔案編輯；執行指令仍需確認</td><td>Shift + Tab</td></tr>
+    <tr><td><strong>Plan Mode 規劃模式</strong></td><td>僅使用唯讀工具，先規劃再執行</td><td>Shift + Tab（再切）</td></tr>
+  </table>
+
+  <h2>關鍵詞彙 <span class="tag-en">Vocabulary</span></h2>
+  <table>
+    <tr><th>英文</th><th>中文</th><th>說明</th></tr>
+    <tr><td>Agentic Loop</td><td>代理循環</td><td>Claude 自主執行任務的反覆循環機制</td></tr>
+    <tr><td>Tool Call</td><td>工具呼叫</td><td>Claude 決定使用特定工具（如讀檔）的行動</td></tr>
+    <tr><td>Compaction</td><td>壓縮</td><td>情境視窗接近上限時，自動摘要舊內容釋放空間</td></tr>
+    <tr><td>Semantic Search</td><td>語意搜尋</td><td>根據語義判斷何時呼叫哪個工具</td></tr>
+    <tr><td>Verification</td><td>驗證</td><td>Claude 確認執行結果是否達到 prompt 目標</td></tr>
+  </table>
+
+  <div class="notes-section">
+    <h2>我的筆記 <span class="tag-en">My Notes</span></h2>
+    <div class="note-line"></div><div class="note-line"></div>
+    <div class="note-line"></div><div class="note-line"></div>
+    <div class="note-line"></div><div class="note-line"></div>
+  </div>
+</div>
+</body>
+</html>

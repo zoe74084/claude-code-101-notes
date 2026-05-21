@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>01 | What is Claude Code？</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", sans-serif; background: #f5f5f0; color: #1a1a1a; font-size: 15px; line-height: 1.7; }
+  .page { max-width: 860px; margin: 0 auto; padding: 40px 32px; background: #fff; min-height: 100vh; }
+  .course-tag { font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: #b45309; background: #fef3c7; padding: 3px 10px; border-radius: 99px; display: inline-block; margin-bottom: 12px; }
+  h1 { font-size: 26px; font-weight: 800; color: #111; border-bottom: 3px solid #d97706; padding-bottom: 10px; margin-bottom: 6px; }
+  .subtitle { font-size: 13px; color: #888; margin-bottom: 32px; }
+  h2 { font-size: 15px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #b45309; margin: 28px 0 12px; display: flex; align-items: center; gap: 8px; }
+  h2::before { content: ""; display: block; width: 4px; height: 16px; background: #d97706; border-radius: 2px; }
+  h3 { font-size: 14px; font-weight: 700; color: #333; margin: 16px 0 6px; }
+  ol, ul { padding-left: 20px; }
+  li { margin-bottom: 6px; }
+  li strong { color: #111; }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 14px; }
+  th { background: #fef3c7; color: #92400e; font-weight: 700; padding: 8px 12px; text-align: left; border: 1px solid #fde68a; }
+  td { padding: 7px 12px; border: 1px solid #e5e7eb; vertical-align: top; }
+  tr:nth-child(even) td { background: #fffbeb; }
+  pre, code { background: #f4f4f0; font-family: "SF Mono", "Fira Code", monospace; font-size: 13px; border-radius: 4px; }
+  pre { padding: 14px 16px; overflow-x: auto; margin: 10px 0; border-left: 3px solid #d97706; }
+  code { padding: 1px 5px; }
+  .notes-section { margin-top: 32px; border-top: 2px dashed #d97706; padding-top: 20px; }
+  .notes-section h2 { margin-top: 0; }
+  .note-lines { margin-top: 10px; }
+  .note-line { border-bottom: 1px solid #e5e7eb; height: 36px; margin-bottom: 0; }
+  .tag-en { font-size: 11px; color: #999; font-weight: 400; margin-left: 6px; }
+  .cta-box { background: #fffbeb; border: 1.5px solid #f59e0b; border-radius: 10px; padding: 18px 20px; margin: 24px 0; }
+  .cta-header { font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: #92400e; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+  .cta-header::before { content: ""; display: block; width: 8px; height: 8px; background: #f59e0b; border-radius: 50%; flex-shrink: 0; }
+  .resource-list { list-style: none; padding: 0; }
+  .resource-list li { padding: 9px 0; border-bottom: 1px solid #fde68a; }
+  .resource-list li:last-child { border-bottom: none; padding-bottom: 0; }
+  .resource-list a { font-weight: 700; color: #92400e; font-size: 14px; text-decoration: none; }
+  .resource-list a:hover { text-decoration: underline; color: #b45309; }
+  .resource-desc { font-size: 12.5px; color: #666; margin-top: 3px; line-height: 1.5; }
+  @media print {
+    body { background: #fff; font-size: 13px; }
+    .page { padding: 20px; }
+    h1 { font-size: 22px; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+  <span class="course-tag">Claude Code 101</span>
+  <h1>01 | What is Claude Code?<span class="tag-en">什麼是 Claude Code？</span></h1>
+  <div class="subtitle">Lesson 1 of 9</div>
+
+  <h2>本節重點 <span class="tag-en">Key Takeaways</span></h2>
+  <ol>
+    <li>Claude Code 是 <strong>Agentic 程式設計工具</strong>，可直接存取你的檔案、終端機與程式碼庫，不需要複製貼上。</li>
+    <li>與 Claude AI 的差異：Claude Code 能「自己進去做事」，而非只輸出文字讓你自己操作。</li>
+    <li><strong>AI Agent</strong> = 能與環境互動、自主執行行動來達成目標的軟體。</li>
+    <li><strong>Context Window（情境視窗）</strong> = Claude 的工作記憶，有容量上限，無法存放所有內容。</li>
+    <li>預設行為：執行操作前會詢問許可；Claude Code 並非完美，可能誤解意圖或引入錯誤。</li>
+  </ol>
+
+  <h2>核心概念 <span class="tag-en">Core Concepts</span></h2>
+
+  <h3>Agentic Loop 代理循環</h3>
+  <p>Claude Code 運作方式：接收 prompt → 收集情境 → 呼叫模型 → 執行行動 → 驗證結果 → 若未達標則循環重試。</p>
+
+  <h3>Tools 工具</h3>
+  <p>讓 Agent 能「做事」的能力模組，例如讀取檔案、搜尋網頁、執行建置程式化腳本等。</p>
+
+  <h3>Context Window 情境視窗</h3>
+  <p>Claude 的工作記憶，存放對話記錄、檔案內容、指令輸出等。容量有限，需策略性管理。</p>
+
+  <h2>關鍵詞彙 <span class="tag-en">Vocabulary</span></h2>
+  <table>
+    <tr><th>英文</th><th>中文</th><th>說明</th></tr>
+    <tr><td>Agentic Coding Tool</td><td>代理式程式設計工具</td><td>能自主執行多步驟任務的 AI 工具</td></tr>
+    <tr><td>AI Agent</td><td>AI 代理</td><td>能與環境互動、執行行動來完成目標的軟體</td></tr>
+    <tr><td>Context Window</td><td>情境視窗</td><td>Claude 的工作記憶，存放對話、檔案等內容</td></tr>
+    <tr><td>Permission Mode</td><td>許可模式</td><td>控制 Claude 執行操作前是否需要詢問確認</td></tr>
+    <tr><td>Tools</td><td>工具</td><td>讓 Agent 執行程式碼、搜尋等行動的功能模組</td></tr>
+    <tr><td>Codebase</td><td>程式碼庫</td><td>整個專案的程式碼集合</td></tr>
+  </table>
+
+  <h2>可用平台 <span class="tag-en">Platforms</span></h2>
+  <table>
+    <tr><th>平台</th><th>特點</th></tr>
+    <tr><td><strong>Terminal（終端機）</strong></td><td>功能最完整，功能更新最快</td></tr>
+    <tr><td>VS Code</td><td>與編輯器深度整合</td></tr>
+    <tr><td>JetBrains IDEs</td><td>與 IDE 整合</td></tr>
+    <tr><td>Claude Desktop</td><td>適合背景執行、同時處理多任務</td></tr>
+    <tr><td>Claude.ai/code（Web）</td><td>可在瀏覽器直接執行任務，不限 GitHub；支援桌面瀏覽器與 iOS app</td></tr>
+  </table>
+
+  <div class="cta-box">
+    <div class="cta-header">延伸資源 Resources</div>
+    <ul class="resource-list">
+      <li>
+        <a href="https://code.claude.com/docs/en/overview" target="_blank">Claude Code 官方文件</a>
+        <div class="resource-desc">功能說明、指令速查與常見問題的完整參考手冊，學習途中遇到不懂的概念可直接查閱</div>
+      </li>
+      <li>
+        <a href="https://anthropic.skilljar.com/claude-code-101" target="_blank">官方入門課程 Claude Code 101</a>
+        <div class="resource-desc">Anthropic 官方推出的完整免費線上課程，內容比 YouTube 短片系列更深入，完成後可取得官方認證證書</div>
+      </li>
+      <li>
+        <a href="https://www.anthropic.com/product/claude-code" target="_blank">Claude Code 產品介紹頁</a>
+        <div class="resource-desc">了解 Claude Code 的功能定位、適用場景與訂閱方案，適合剛接觸的學習者瞭解全貌</div>
+      </li>
+    </ul>
+  </div>
+
+  <div class="notes-section">
+    <h2>我的筆記 <span class="tag-en">My Notes</span></h2>
+    <div class="note-lines">
+      <div class="note-line"></div>
+      <div class="note-line"></div>
+      <div class="note-line"></div>
+      <div class="note-line"></div>
+      <div class="note-line"></div>
+      <div class="note-line"></div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

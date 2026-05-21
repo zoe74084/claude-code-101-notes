@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>05 | The CLAUDE.md File</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", sans-serif; background: #f5f5f0; color: #1a1a1a; font-size: 15px; line-height: 1.7; }
+  .page { max-width: 860px; margin: 0 auto; padding: 40px 32px; background: #fff; min-height: 100vh; }
+  .course-tag { font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: #b45309; background: #fef3c7; padding: 3px 10px; border-radius: 99px; display: inline-block; margin-bottom: 12px; }
+  h1 { font-size: 26px; font-weight: 800; color: #111; border-bottom: 3px solid #d97706; padding-bottom: 10px; margin-bottom: 6px; }
+  .subtitle { font-size: 13px; color: #888; margin-bottom: 32px; }
+  h2 { font-size: 15px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #b45309; margin: 28px 0 12px; display: flex; align-items: center; gap: 8px; }
+  h2::before { content: ""; display: block; width: 4px; height: 16px; background: #d97706; border-radius: 2px; }
+  h3 { font-size: 14px; font-weight: 700; color: #333; margin: 16px 0 6px; }
+  ol, ul { padding-left: 20px; }
+  li { margin-bottom: 6px; }
+  li strong { color: #111; }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 14px; }
+  th { background: #fef3c7; color: #92400e; font-weight: 700; padding: 8px 12px; text-align: left; border: 1px solid #fde68a; }
+  td { padding: 7px 12px; border: 1px solid #e5e7eb; vertical-align: top; }
+  tr:nth-child(even) td { background: #fffbeb; }
+  pre, code { background: #f4f4f0; font-family: "SF Mono", "Fira Code", monospace; font-size: 13px; border-radius: 4px; }
+  pre { padding: 14px 16px; overflow-x: auto; margin: 10px 0; border-left: 3px solid #d97706; line-height: 1.9; }
+  code { padding: 1px 5px; }
+  .tip-box { background: #f0fdf4; border: 1px solid #bbf7d0; border-left: 4px solid #22c55e; border-radius: 6px; padding: 12px 16px; margin: 12px 0; font-size: 14px; }
+  .tip-box .label { font-size: 11px; font-weight: 700; color: #15803d; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px; }
+  .notes-section { margin-top: 32px; border-top: 2px dashed #d97706; padding-top: 20px; }
+  .note-line { border-bottom: 1px solid #e5e7eb; height: 36px; }
+  .tag-en { font-size: 11px; color: #999; font-weight: 400; margin-left: 6px; }
+  @media print { body { background: #fff; font-size: 13px; } .page { padding: 20px; } }
+</style>
+</head>
+<body>
+<div class="page">
+  <span class="course-tag">Claude Code 101</span>
+  <h1>05 | The CLAUDE.md File<span class="tag-en">CLAUDE.md 持久記憶檔案</span></h1>
+  <div class="subtitle">Lesson 5 of 9</div>
+
+  <h2>本節重點 <span class="tag-en">Key Takeaways</span></h2>
+  <ol>
+    <li><strong>CLAUDE.md = Claude Code 的持久記憶</strong>，每次 session 啟動時自動讀取，不需再重新探索。</li>
+    <li>沒有 CLAUDE.md 時，Claude 每次都要從頭理解程式碼庫，容易做出假設與錯誤。</li>
+    <li><code>/init</code> 指令：讓 Claude 根據你的程式碼庫自動生成初始 CLAUDE.md。</li>
+    <li>層級結構：<strong>專案級</strong>（根目錄，團隊共用）&gt; <strong>使用者級</strong>（個人設定，跨所有專案）。</li>
+    <li>最佳實踐：先不加，觀察需要反覆糾正的地方，再精簡加入。</li>
+  </ol>
+
+  <h2>CLAUDE.md 層級 <span class="tag-en">Hierarchy</span></h2>
+  <pre>~/.claude/CLAUDE.md          ← 使用者級（個人偏好，跨所有專案）
+                                  只有你看得到
+
+/your-project/CLAUDE.md      ← 專案級（根目錄，check in 版本控制）
+                                  整個團隊共用</pre>
+
+  <h2>CLAUDE.md 建議填入內容</h2>
+  <pre>## Tech Stack 技術堆疊
+- Next.js 15 (App Router)
+- Tailwind CSS
+- Drizzle ORM
+
+## Commands 常用指令
+- dev: npm run dev
+- test: npm test
+- lint: npm run lint
+
+## Code Style 程式碼風格
+- 2 space indentation
+- Named exports only
+- API routes → /app/api/
+
+## Rules 規則
+- Use server actions instead of API routes</pre>
+
+  <h2>三個使用技巧</h2>
+  <ol>
+    <li>糾正 Claude 的行為後，告訴他：<strong>「把這個規則存進 CLAUDE.md」</strong></li>
+    <li>用 <code>@檔案路徑</code> 引用文件，讓 Claude 直接參考</li>
+    <li>從 <code>/init</code> 自動生成起點，再根據需要精簡</li>
+  </ol>
+
+  <div class="tip-box">
+    <div class="label">最佳實踐 Best Practice</div>
+    先不加 CLAUDE.md，觀察哪些地方需要反覆糾正，再把那些規則加進去。這樣可以保持檔案精簡，只存放真正必要的資訊。
+  </div>
+
+  <h2>關鍵詞彙 <span class="tag-en">Vocabulary</span></h2>
+  <table>
+    <tr><th>英文</th><th>中文</th><th>說明</th></tr>
+    <tr><td>CLAUDE.md</td><td>—</td><td>Claude Code 的持久記憶設定檔（Markdown 格式）</td></tr>
+    <tr><td>Persistent Memory</td><td>持久記憶</td><td>跨 session 保留的知識與設定</td></tr>
+    <tr><td>/init</td><td>—</td><td>讓 Claude 自動生成 CLAUDE.md 的指令</td></tr>
+    <tr><td>Project-level</td><td>專案級</td><td>放在根目錄，整個團隊共用</td></tr>
+    <tr><td>User-level</td><td>使用者級</td><td>放在個人設定資料夾，只有自己用</td></tr>
+  </table>
+
+  <div class="notes-section">
+    <h2>我的筆記 <span class="tag-en">My Notes</span></h2>
+    <div class="note-line"></div><div class="note-line"></div>
+    <div class="note-line"></div><div class="note-line"></div>
+    <div class="note-line"></div><div class="note-line"></div>
+  </div>
+</div>
+</body>
+</html>

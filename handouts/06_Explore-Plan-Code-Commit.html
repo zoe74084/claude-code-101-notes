@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>06 | Explore → Plan → Code → Commit</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", sans-serif; background: #f5f5f0; color: #1a1a1a; font-size: 15px; line-height: 1.7; }
+  .page { max-width: 860px; margin: 0 auto; padding: 40px 32px; background: #fff; min-height: 100vh; }
+  .course-tag { font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: #b45309; background: #fef3c7; padding: 3px 10px; border-radius: 99px; display: inline-block; margin-bottom: 12px; }
+  h1 { font-size: 26px; font-weight: 800; color: #111; border-bottom: 3px solid #d97706; padding-bottom: 10px; margin-bottom: 6px; }
+  .subtitle { font-size: 13px; color: #888; margin-bottom: 32px; }
+  h2 { font-size: 15px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #b45309; margin: 28px 0 12px; display: flex; align-items: center; gap: 8px; }
+  h2::before { content: ""; display: block; width: 4px; height: 16px; background: #d97706; border-radius: 2px; }
+  h3 { font-size: 14px; font-weight: 700; color: #333; margin: 16px 0 6px; }
+  ol, ul { padding-left: 20px; }
+  li { margin-bottom: 6px; }
+  li strong { color: #111; }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 14px; }
+  th { background: #fef3c7; color: #92400e; font-weight: 700; padding: 8px 12px; text-align: left; border: 1px solid #fde68a; }
+  td { padding: 7px 12px; border: 1px solid #e5e7eb; vertical-align: top; }
+  tr:nth-child(even) td { background: #fffbeb; }
+  pre, code { background: #f4f4f0; font-family: "SF Mono", "Fira Code", monospace; font-size: 13px; border-radius: 4px; }
+  pre { padding: 14px 16px; overflow-x: auto; margin: 10px 0; border-left: 3px solid #d97706; line-height: 1.9; }
+  code { padding: 1px 5px; }
+  .workflow { display: flex; gap: 0; margin: 16px 0; }
+  .wf-step { flex: 1; text-align: center; padding: 14px 8px; background: #fffbeb; border: 1px solid #fde68a; position: relative; font-size: 13px; }
+  .wf-step:not(:last-child)::after { content: "→"; position: absolute; right: -12px; top: 50%; transform: translateY(-50%); color: #d97706; font-weight: 700; z-index: 1; font-size: 16px; }
+  .wf-step .en { font-weight: 800; color: #92400e; font-size: 14px; display: block; }
+  .wf-step .zh { color: #555; font-size: 12px; }
+  .notes-section { margin-top: 32px; border-top: 2px dashed #d97706; padding-top: 20px; }
+  .note-line { border-bottom: 1px solid #e5e7eb; height: 36px; }
+  .tag-en { font-size: 11px; color: #999; font-weight: 400; margin-left: 6px; }
+  .note-box { background: #f9f9f7; border: 1px solid #e5e7eb; border-left: 3px solid #9ca3af; border-radius: 4px; padding: 10px 14px; font-size: 12.5px; color: #555; margin: 10px 0 18px; line-height: 1.65; }
+  .note-box strong { color: #374151; }
+  @media print { body { background: #fff; font-size: 13px; } .page { padding: 20px; } }
+</style>
+</head>
+<body>
+<div class="page">
+  <span class="course-tag">Claude Code 101</span>
+  <h1>06 | Explore → Plan → Code → Commit<span class="tag-en">核心工作流程</span></h1>
+  <div class="subtitle">Lesson 6 of 9</div>
+
+  <h2>本節重點 <span class="tag-en">Key Takeaways</span></h2>
+  <ol>
+    <li><strong>核心工作流程</strong>：Explore → Plan → Code → Commit，不要直接跳到 Code。</li>
+    <li>多數人直接下指令產生程式碼，導致大量事後修正；<strong>計畫確認前才是最佳修正節點</strong>。</li>
+    <li>Plan Mode 可同時完成 Explore + Plan，是進入前兩步最快的方式。</li>
+    <li>為 Claude 提供<strong>可驗證的成功標準</strong>（測試套件、Claude in Chrome），讓他自行確認完成。</li>
+    <li>Commit 前用 sub agent 做 code review，再讓 Claude 生成 commit message。</li>
+  </ol>
+
+  <h2>工作流程 <span class="tag-en">Workflow</span></h2>
+  <div class="workflow">
+    <div class="wf-step"><span class="en">Explore</span><span class="zh">探索</span></div>
+    <div class="wf-step"><span class="en">Plan</span><span class="zh">規劃 ✅修正點</span></div>
+    <div class="wf-step"><span class="en">Code</span><span class="zh">編碼</span></div>
+    <div class="wf-step"><span class="en">Commit</span><span class="zh">提交</span></div>
+  </div>
+  <div class="note-box">
+    <strong>備注：名稱差異</strong><br>
+    本講義依課程影片使用「<strong>Code</strong>」；Anthropic 官方文件（code.claude.com）將同一步驟標示為「<strong>Implement</strong>」。兩者指相同流程，「Implement」語意較廣，泛指所有實作工作——不限於程式設計，修改設定、資料遷移、撰寫文件等皆屬之。
+  </div>
+
+  <h2>各步驟操作說明</h2>
+
+  <h3>Step 1 &amp; 2 — Explore + Plan（用 Plan Mode）</h3>
+  <pre>Shift + Tab → 進入 Plan Mode
+輸入目標 Prompt
+→ Claude 讀取相關檔案、搜尋文件、提問澄清
+→ 回傳詳細計畫
+審視計畫 → 修改 → Approve</pre>
+
+  <h3>Step 3 — Code</h3>
+  <ul>
+    <li>讓 Claude 依計畫項目逐步執行</li>
+    <li>隨時 course-correct（調整方向）</li>
+    <li>把反覆發生的修正存進 CLAUDE.md</li>
+  </ul>
+
+  <h3>Step 4 — Commit</h3>
+  <pre>1. 用 sub agent 做 code review
+2. 讓 Claude 生成 commit message
+3. Push → 開始下一個功能</pre>
+
+  <h2>讓 Claude 自我驗證的工具 <span class="tag-en">Verification Tools</span></h2>
+  <table>
+    <tr><th>工具</th><th>用途</th></tr>
+    <tr><td>測試套件（Test Suite）</td><td>Claude 跑測試確認功能正確</td></tr>
+    <tr><td>Claude in Chrome 擴充</td><td>Claude 控制瀏覽器實際測試 UI</td></tr>
+    <tr><td>Lint / Type Check</td><td>確保程式碼品質</td></tr>
+  </table>
+
+  <h2>關鍵詞彙 <span class="tag-en">Vocabulary</span></h2>
+  <table>
+    <tr><th>英文</th><th>中文</th><th>說明</th></tr>
+    <tr><td>Explore</td><td>探索</td><td>了解程式碼庫現狀，收集情境</td></tr>
+    <tr><td>Course Correct</td><td>修正方向</td><td>執行過程中調整 Claude 的做法</td></tr>
+    <tr><td>Sub Agent</td><td>子代理程式</td><td>獨立執行特定任務的 Claude 實例</td></tr>
+    <tr><td>Commit Message</td><td>提交訊息</td><td>Git commit 的描述文字</td></tr>
+  </table>
+
+  <div class="notes-section">
+    <h2>我的筆記 <span class="tag-en">My Notes</span></h2>
+    <div class="note-line"></div><div class="note-line"></div>
+    <div class="note-line"></div><div class="note-line"></div>
+    <div class="note-line"></div><div class="note-line"></div>
+  </div>
+</div>
+</body>
+</html>

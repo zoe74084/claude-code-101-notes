@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Claude Code 101 — 電子版</title>
+<style>
+/* ── Reset & Base ── */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", sans-serif; background: #f7f6f3; color: #1a1a1a; font-size: 15px; line-height: 1.75; }
+
+/* ── Layout ── */
+.layout { display: flex; min-height: 100vh; }
+
+/* ── Sidebar ── */
+.sidebar {
+  width: 330px; min-width: 330px;
+  background: #1a1a1a; color: #e5e5e5;
+  padding: 28px 0;
+  position: sticky; top: 0; height: 100vh;
+  overflow-y: auto; flex-shrink: 0;
+}
+.sidebar-header { padding: 0 22px 20px; border-bottom: 1px solid #333; margin-bottom: 12px; }
+.sidebar-header .brand { font-size: 11px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: #d97706; margin-bottom: 4px; }
+.sidebar-header h2 { font-size: 15px; font-weight: 700; color: #fff; line-height: 1.4; }
+.nav-list { list-style: none; }
+.nav-item a {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 9px 22px; color: #aaa; text-decoration: none;
+  font-size: 13px; line-height: 1.4; transition: background 0.15s, color 0.15s;
+}
+.nav-item a:hover { background: #2a2a2a; color: #fff; }
+.nav-item a.active { background: #2a2a2a; color: #f59e0b; }
+.nav-num { font-size: 11px; font-weight: 700; color: #555; min-width: 20px; margin-top: 1px; }
+.nav-item a:hover .nav-num, .nav-item a.active .nav-num { color: #d97706; }
+
+/* ── Main ── */
+.main { flex: 1; padding: 48px 52px; max-width: 820px; }
+
+/* ── Lesson Block ── */
+.lesson { margin-bottom: 72px; padding-bottom: 72px; border-bottom: 1px solid #e5e7eb; scroll-margin-top: 32px; }
+.lesson:last-child { border-bottom: none; }
+.lesson-tag { font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: #b45309; background: #fef3c7; padding: 3px 10px; border-radius: 99px; display: inline-block; margin-bottom: 12px; }
+.lesson h1 { font-size: 24px; font-weight: 800; color: #111; border-bottom: 3px solid #d97706; padding-bottom: 10px; margin-bottom: 4px; line-height: 1.3; }
+.lesson-sub { font-size: 13px; color: #999; margin-bottom: 28px; }
+
+/* ── Section Headings ── */
+h2 { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.09em; color: #b45309; margin: 24px 0 10px; display: flex; align-items: center; gap: 8px; }
+h2::before { content: ""; display: block; width: 4px; height: 14px; background: #d97706; border-radius: 2px; flex-shrink: 0; }
+h3 { font-size: 14px; font-weight: 700; color: #333; margin: 14px 0 5px; }
+
+/* ── Lists ── */
+ol, ul { padding-left: 20px; }
+li { margin-bottom: 5px; }
+li strong { color: #111; }
+
+/* ── Tables ── */
+table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 13.5px; }
+th { background: #fef3c7; color: #92400e; font-weight: 700; padding: 7px 11px; text-align: left; border: 1px solid #fde68a; }
+td { padding: 6px 11px; border: 1px solid #e5e7eb; vertical-align: top; }
+tr:nth-child(even) td { background: #fffbeb; }
+
+/* ── Code ── */
+pre, code { background: #f3f3ef; font-family: "SF Mono", "Fira Code", "Consolas", monospace; font-size: 13px; border-radius: 4px; }
+pre { padding: 14px 16px; overflow-x: auto; margin: 10px 0; border-left: 3px solid #d97706; line-height: 1.85; }
+code { padding: 1px 5px; }
+
+/* ── Special Boxes ── */
+.example-box { background: #fffbeb; border: 1px solid #fde68a; border-left: 4px solid #d97706; border-radius: 6px; padding: 13px 15px; margin: 10px 0; font-size: 13.5px; }
+.example-box .label { font-size: 11px; font-weight: 700; color: #b45309; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 5px; }
+.tip-box { background: #f0fdf4; border: 1px solid #bbf7d0; border-left: 4px solid #22c55e; border-radius: 6px; padding: 11px 15px; margin: 10px 0; font-size: 13.5px; }
+.tip-box .label { font-size: 11px; font-weight: 700; color: #15803d; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px; }
+.key-rule { background: #fffbeb; border: 1px solid #fde68a; border-left: 4px solid #f59e0b; border-radius: 6px; padding: 11px 15px; margin: 14px 0; font-size: 14px; font-weight: 600; color: #92400e; }
+
+/* ── Workflow Steps ── */
+.workflow { display: flex; gap: 0; margin: 14px 0; }
+.wf-step { flex: 1; text-align: center; padding: 12px 6px; background: #fffbeb; border: 1px solid #fde68a; position: relative; font-size: 12px; }
+.wf-step:not(:last-child)::after { content: "→"; position: absolute; right: -12px; top: 50%; transform: translateY(-50%); color: #d97706; font-weight: 700; z-index: 1; font-size: 15px; }
+.wf-step .en { font-weight: 800; color: #92400e; font-size: 13px; display: block; }
+.wf-step .zh { color: #666; font-size: 11px; }
+
+/* ── Command Cards ── */
+.cmd-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 10px 0; }
+.cmd-card { background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px; padding: 13px; text-align: center; }
+.cmd-card .cmd { font-family: "SF Mono", monospace; font-size: 16px; font-weight: 700; color: #92400e; margin-bottom: 5px; }
+.cmd-card .desc { font-size: 12px; color: #666; }
+
+/* ── Scope Cards ── */
+.scope-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 10px 0; }
+.scope-card { border-radius: 8px; padding: 13px; font-size: 13px; border: 1px solid #e5e7eb; }
+.scope-card.local { background: #fef9f0; border-color: #fde68a; }
+.scope-card.user  { background: #f0f9ff; border-color: #bae6fd; }
+.scope-card.proj  { background: #f0fdf4; border-color: #bbf7d0; }
+.scope-card .label { font-weight: 800; font-size: 13px; margin-bottom: 4px; }
+.scope-card.local .label { color: #92400e; }
+.scope-card.user  .label { color: #0369a1; }
+.scope-card.proj  .label { color: #15803d; }
+
+/* ── Exit Code Cards ── */
+.exit-codes { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 10px 0; }
+.exit-card { border-radius: 8px; padding: 13px 15px; font-size: 13.5px; }
+.exit-card.ok  { background: #f0fdf4; border: 1px solid #bbf7d0; }
+.exit-card.bad { background: #fef2f2; border: 1px solid #fecaca; }
+.exit-card .code { font-family: "SF Mono", monospace; font-size: 20px; font-weight: 800; margin-bottom: 3px; }
+.exit-card.ok  .code { color: #15803d; }
+.exit-card.bad .code { color: #dc2626; }
+
+/* ── Notes ── */
+
+/* ── Video Thumbnail Link ── */
+.video-link { display: block; position: relative; margin: 16px 0 24px; border-radius: 10px; overflow: hidden; text-decoration: none; box-shadow: 0 2px 16px rgba(0,0,0,.15); }
+.video-link img { display: block; width: 100%; aspect-ratio: 16/9; object-fit: cover; }
+.video-link .play-btn { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(0,0,0,.35); transition: background .2s; }
+.video-link:hover .play-btn { background: rgba(0,0,0,.55); }
+.play-circle { width: 64px; height: 64px; background: rgba(255,255,255,.92); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 10px; transition: transform .2s; }
+.video-link:hover .play-circle { transform: scale(1.1); }
+.play-circle svg { width: 26px; height: 26px; fill: #d97706; margin-left: 4px; }
+.play-label { font-size: 13px; font-weight: 600; color: #fff; letter-spacing: 0.04em; text-shadow: 0 1px 3px rgba(0,0,0,.5); }
+
+/* ── CTA Box ── */
+.cta-box { background: #fffbeb; border: 1.5px solid #f59e0b; border-radius: 10px; padding: 18px 20px; margin: 24px 0 0; }
+.cta-header { font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: #92400e; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+.cta-header::before { content: ""; display: block; width: 8px; height: 8px; background: #f59e0b; border-radius: 50%; flex-shrink: 0; }
+.cta-steps { list-style: none; padding-left: 0; counter-reset: cta; }
+.cta-steps li { counter-increment: cta; display: flex; align-items: flex-start; gap: 10px; margin-bottom: 9px; font-size: 13.5px; line-height: 1.55; }
+.cta-steps li::before { content: counter(cta); min-width: 22px; height: 22px; background: #d97706; color: #fff; font-weight: 800; font-size: 11px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+.cta-steps li code { background: #fde68a; padding: 1px 5px; border-radius: 3px; font-size: 12px; }
+.resource-list { list-style: none; padding: 0; }
+.resource-list li { padding: 9px 0; border-bottom: 1px solid #fde68a; }
+.resource-list li:last-child { border-bottom: none; padding-bottom: 0; }
+.resource-list a { font-weight: 700; color: #92400e; font-size: 13.5px; text-decoration: none; }
+.resource-list a:hover { text-decoration: underline; color: #b45309; }
+.resource-desc { font-size: 12px; color: #666; margin-top: 3px; line-height: 1.5; }
+
+/* ── Print ── */
+@media print {
+  .sidebar { display: none; }
+  .main { padding: 20px; max-width: 100%; }
+  .lesson { page-break-after: always; }
+  body { font-size: 12px; background: #fff; }
+  h1 { font-size: 20px; }
+}
+
+.source-footer {
+  margin-top: 48px;
+  padding: 16px 0 8px;
+  border-top: 1px solid #e5e7eb;
+  font-size: 12px;
+  color: #888;
+  text-align: center;
+}
+.source-footer a { color: #d97706; text-decoration: none; }
+.source-footer a:hover { text-decoration: underline; }
+.note-box { background: #f9f9f7; border: 1px solid #e5e7eb; border-left: 3px solid #9ca3af; border-radius: 4px; padding: 10px 14px; font-size: 12.5px; color: #555; margin: 10px 0 18px; line-height: 1.65; }
+.note-box strong { color: #374151; }
+
+/* ── Sidebar flex column (for pinned footer) ── */
+.sidebar { display: flex; flex-direction: column; }
+.nav-list { flex: 1; }
+.sidebar-footer {
+  padding: 14px 22px 18px;
+  border-top: 1px solid #333;
+  font-size: 11px;
+  color: #555;
+  line-height: 1.7;
+  flex-shrink: 0;
+}
+.sidebar-footer a { color: #d97706; text-decoration: none; }
+.sidebar-footer a:hover { text-decoration: underline; }
+
+/* ── Mobile Header ── */
+.mobile-header {
+  display: none;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  background: #1a1a1a;
+  position: sticky; top: 0;
+  z-index: 50;
+  border-bottom: 1px solid #333;
+}
+.hamburger {
+  width: 36px; height: 36px;
+  background: none; border: none; cursor: pointer;
+  display: flex; flex-direction: column; justify-content: center; gap: 5px;
+  padding: 4px; flex-shrink: 0;
+}
+.hamburger span { display: block; width: 22px; height: 2px; background: #d97706; border-radius: 2px; transition: 0.2s; }
+.mobile-title { font-size: 13px; font-weight: 700; color: #fff; line-height: 1.35; }
+.mobile-title small { display: block; font-size: 10px; font-weight: 400; color: #888; margin-top: 1px; }
+
+/* ── Sidebar Overlay ── */
+.sidebar-overlay {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.5); z-index: 99;
+}
+.sidebar-overlay.visible { display: block; }
+
+/* ── Mobile Breakpoint ── */
+@media (max-width: 768px) {
+  .mobile-header { display: flex; }
+  .layout { display: block; }
+  .sidebar {
+    position: fixed; top: 0; left: 0;
+    width: 280px; height: 100vh;
+    z-index: 100;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+    padding-top: 16px;
+  }
+  .sidebar.open { transform: translateX(0); box-shadow: 4px 0 24px rgba(0,0,0,.4); }
+  .main { padding: 20px 16px; max-width: 100%; }
+  .cmd-cards { grid-template-columns: 1fr; }
+  .scope-cards { grid-template-columns: 1fr; }
+  .exit-codes { grid-template-columns: 1fr; }
+  .workflow { flex-direction: column; gap: 22px; }
+  .wf-step:not(:last-child)::after {
+    content: "↓";
+    position: absolute;
+    right: auto; top: auto;
+    bottom: -16px; left: 50%;
+    transform: translateX(-50%);
+    font-size: 14px;
+  }
+  table { font-size: 12px; }
+  th, td { padding: 5px 8px; }
+  pre { font-size: 12px; }
+  .lesson { margin-bottom: 40px; padding-bottom: 40px; }
+  .lesson h1 { font-size: 20px; }
+  .cta-box { padding: 14px 14px; }
+  /* ── 防止水平溢出 ── */
+  html, body { max-width: 100%; overflow-x: hidden; }
+  .main { width: 100%; }
+  table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  pre { max-width: 100%; word-break: break-all; white-space: pre-wrap; }
+  a { word-break: break-word; }
+}
+</style>
+</head>
+<body>
+
+<!-- ══ MOBILE HEADER ══ -->
+<div class="mobile-header">
+  <button class="hamburger" aria-label="開啟選單">
+    <span></span><span></span><span></span>
+  </button>
+  <div class="mobile-title">Claude Code 101 <small>學習筆記</small></div>
+</div>
+<div class="sidebar-overlay"></div>
+
+<div class="layout">
+
+<!-- ══ SIDEBAR ══ -->
+<nav class="sidebar">
+  <div class="sidebar-header">
+    <div class="brand">Course Notes</div>
+    <h2>Claude Code 101<br>學習筆記</h2>
+  </div>
+  <ul class="nav-list">
+    <li class="nav-item"><a href="#lesson01"><span class="nav-num">01</span>What is Claude Code?</a></li>
+    <li class="nav-item"><a href="#lesson02"><span class="nav-num">02</span>Installing Claude Code</a></li>
+    <li class="nav-item"><a href="#lesson03"><span class="nav-num">03</span>How Claude Code Works</a></li>
+    <li class="nav-item"><a href="#lesson04"><span class="nav-num">04</span>Your First Prompt</a></li>
+    <li class="nav-item"><a href="#lesson05"><span class="nav-num">05</span>The CLAUDE.md File</a></li>
+    <li class="nav-item"><a href="#lesson06"><span class="nav-num">06</span>Explore → Plan → Code → Commit</a></li>
+    <li class="nav-item"><a href="#lesson07"><span class="nav-num">07</span>Context Management</a></li>
+    <li class="nav-item"><a href="#lesson08"><span class="nav-num">08</span>MCP</a></li>
+    <li class="nav-item"><a href="#lesson09"><span class="nav-num">09</span>Hooks</a></li>
+  </ul>
+  <div class="sidebar-footer">
+    資料來源<br>
+    <a href="https://youtube.com/playlist?list=PLmWCw1CzcFilebjK89WLb5cAvM8K0cLB3&si=6K86NWePoZl9vmu5" target="_blank">Claude 官方 YouTube 課程</a>
+  </div>
+</nav>
+
+<!-- ══ MAIN ══ -->
+<main class="main">
+
+<!-- ═══════════════════════════════════ 01 ═══ -->
+<section class="lesson" id="lesson01">
+  <span class="lesson-tag">Lesson 01</span>
+  <h1>What is Claude Code?<br><small style="font-size:16px;font-weight:500;color:#666;">什麼是 Claude Code？</small></h1>
+  <div class="lesson-sub">本節概念：Agentic Tool · AI Agent · Context Window · Permission Mode</div>
+  <a href="https://www.youtube.com/watch?v=fl1DSmwQKKY" target="_blank" class="video-link">
+    <img src="https://img.youtube.com/vi/fl1DSmwQKKY/mqdefault.jpg" alt="What is Claude Code?">
+    <div class="play-btn">
+      <div class="play-circle"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
+      <span class="play-label">前往 YouTube 觀看影片</span>
+    </div>
+  </a>
+
+  <h2>本節重點 Key Takeaways</h2>
+  <ol>
+    <li>Claude Code 是 <strong>Agentic 程式設計工具</strong>，可直接存取你的檔案、終端機與程式碼庫，不需要複製貼上。</li>
+    <li>與 Claude AI 的差異：Claude Code 能「自己進去做事」，而非只輸出文字讓你自己操作。</li>
+    <li><strong>AI Agent</strong> = 能與環境互動、自主執行行動來達成目標的軟體。</li>
+    <li><strong>Context Window（情境視窗）</strong> = Claude 的工作記憶，有容量上限，無法存放所有內容。</li>
+    <li>預設行為：執行操作前會詢問許可；Claude Code 並非完美，可能誤解意圖或引入錯誤。</li>
+  </ol>
+
+  <h2>核心概念 Core Concepts</h2>
+  <h3>Agentic Loop 代理循環</h3>
+  <p>接收 prompt → 收集情境 → 呼叫模型 → 執行行動 → 驗證結果 → 若未達標則循環重試。</p>
+  <h3>Tools 工具</h3>
+  <p>讓 Agent 能「做事」的能力模組，例如讀取檔案、搜尋網頁、執行建置程式化腳本等。</p>
+  <h3>Context Window 情境視窗</h3>
+  <p>Claude 的工作記憶，存放對話記錄、檔案內容、指令輸出等。容量有限，需策略性管理。</p>
+
+  <h2>關鍵詞彙 Vocabulary</h2>
+  <table>
+    <tr><th>英文</th><th>中文</th><th>說明</th></tr>
+    <tr><td>Agentic Coding Tool</td><td>代理式程式設計工具</td><td>能自主執行多步驟任務的 AI 工具</td></tr>
+    <tr><td>AI Agent</td><td>AI 代理</td><td>能與環境互動、執行行動來完成目標的軟體</td></tr>
+    <tr><td>Context Window</td><td>情境視窗</td><td>Claude 的工作記憶，存放對話、檔案等內容</td></tr>
+    <tr><td>Permission Mode</td><td>許可模式</td><td>控制 Claude 執行操作前是否需要詢問確認</td></tr>
+    <tr><td>Tools</td><td>工具</td><td>讓 Agent 執行程式碼、搜尋等行動的功能模組</td></tr>
+    <tr><td>Codebase</td><td>程式碼庫</td><td>整個專案的程式碼集合</td></tr>
+  </table>
+
+  <h2>可用平台 Platforms</h2>
+  <table>
+    <tr><th>平台</th><th>特點</th></tr>
+    <tr><td><strong>Terminal（終端機）</strong></td><td>功能最完整，功能更新最快</td></tr>
+    <tr><td>VS Code</td><td>與編輯器深度整合</td></tr>
+    <tr><td>JetBrains IDEs</td><td>與 IDE 整合</td></tr>
+    <tr><td>Claude Desktop</td><td>適合背景執行、同時處理多任務</td></tr>
+    <tr><td>Claude.ai/code（Web）</td><td>可在瀏覽器直接執行任務，不限 GitHub；支援桌面瀏覽器與 iOS app</td></tr>
+  </table>
+
+  <div class="cta-box">
+    <div class="cta-header">延伸資源 Resources</div>
+    <ul class="resource-list">
+      <li>
+        <a href="https://code.claude.com/docs/en/overview" target="_blank">Claude Code 官方文件</a>
+        <div class="resource-desc">功能說明、指令速查與常見問題的完整參考手冊，學習途中遇到不懂的概念可直接查閱</div>
+      </li>
+      <li>
+        <a href="https://anthropic.skilljar.com/claude-code-101" target="_blank">官方入門課程 Claude Code 101</a>
+        <div class="resource-desc">Anthropic 官方推出的完整免費線上課程，內容比 YouTube 短片系列更深入，完成後可取得官方認證證書</div>
+      </li>
+      <li>
+        <a href="https://www.anthropic.com/product/claude-code" target="_blank">Claude Code 產品介紹頁</a>
+        <div class="resource-desc">了解 Claude Code 的功能定位、適用場景與訂閱方案，適合剛接觸的學習者瞭解全貌</div>
+      </li>
+    </ul>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════ 02 ═══ -->
+<section class="lesson" id="lesson02">
+  <span class="lesson-tag">Lesson 02</span>
+  <h1>Installing Claude Code<br><small style="font-size:16px;font-weight:500;color:#666;">安裝 Claude Code</small></h1>
+  <div class="lesson-sub">本節概念：Install · Platform Setup · Auto Update</div>
+  <a href="https://www.youtube.com/watch?v=0kILa02vKuI" target="_blank" class="video-link">
+    <img src="https://img.youtube.com/vi/0kILa02vKuI/mqdefault.jpg" alt="Installing Claude Code">
+    <div class="play-btn">
+      <div class="play-circle"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
+      <span class="play-label">前往 YouTube 觀看影片</span>
+    </div>
+  </a>
+
+  <h2>本節重點 Key Takeaways</h2>
+  <ol>
+    <li><strong>Mac / Linux / WSL</strong>：用 <code>curl</code> 安裝（支援自動更新）；Homebrew 可用但<strong>不自動更新</strong>。</li>
+    <li><strong>Windows</strong>：PowerShell <code>Invoke-RestMethod</code>、<code>curl</code> 或 <code>winget</code>（winget 不自動更新）。</li>
+    <li>啟動方式：進入專案目錄後執行 <code>claude</code>，首次需設定色彩主題並登入帳號。</li>
+    <li>Claude 可存取你執行指令的目錄及其<strong>所有子資料夾</strong>。</li>
+    <li>帳號類型：Pro、Max、Enterprise 或 API Key 皆可。</li>
+  </ol>
+
+  <h2>安裝指令速查 Install Commands</h2>
+  <h3>Mac / Linux / WSL</h3>
+  <pre><code># 推薦（支援自動更新）
+curl -fsSL https://claude.ai/install.sh | sh
+
+# Homebrew（不自動更新）
+brew install --cask claude-code</code></pre>
+  <h3>Windows</h3>
+  <pre><code># PowerShell
+Invoke-RestMethod -Uri https://claude.ai/install.ps1 | Invoke-Expression
+
+# winget（不自動更新）
+winget install Anthropic.ClaudeCode</code></pre>
+
+  <h2>各平台安裝方式 Platform Setup</h2>
+  <table>
+    <tr><th>平台</th><th>步驟</th><th>備註</th></tr>
+    <tr><td><strong>Terminal</strong></td><td>進入專案目錄 → 執行 <code>claude</code></td><td>功能最完整</td></tr>
+    <tr><td>VS Code</td><td>Extensions → "Claude Code"（Anthropic 藍勾）→ 安裝</td><td>Cmd+Shift+P 開啟</td></tr>
+    <tr><td>JetBrains</td><td>JetBrains Marketplace → 安裝後重啟</td><td>側邊欄出現 Claude logo</td></tr>
+    <tr><td>Claude Desktop</td><td>安裝後登入 → 頂部切換 "Code" 分頁</td><td>適合背景執行</td></tr>
+    <tr><td>Web</td><td>claude.ai/code</td><td>可在瀏覽器直接執行任務，不限 GitHub；支援桌面瀏覽器與 iOS app</td></tr>
+  </table>
+
+  <h2>關鍵詞彙 Vocabulary</h2>
+  <table>
+    <tr><th>英文</th><th>中文</th><th>說明</th></tr>
+    <tr><td>Auto Update</td><td>自動更新</td><td>安裝後自動取得最新版本（curl 安裝支援）</td></tr>
+    <tr><td>Project Directory</td><td>專案目錄</td><td>你要讓 Claude 操作的資料夾</td></tr>
+    <tr><td>API Key</td><td>API 金鑰</td><td>無帳號時可用此方式驗證身份</td></tr>
+  </table>
+
+  <div class="cta-box">
+    <div class="cta-header">實作練習 Try It Now</div>
+    <ol class="cta-steps">
+      <li>依照你的作業系統，用本節的指令安裝 Claude Code</li>
+      <li>執行 <code>claude --version</code> 確認安裝成功</li>
+      <li>選擇你最常用的平台（Terminal / VS Code / Desktop），完成對應的設定步驟</li>
+      <li>進入一個真實專案目錄，執行 <code>claude</code>，確認它能讀到你的檔案</li>
+    </ol>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════ 03 ═══ -->
+<section class="lesson" id="lesson03">
+  <span class="lesson-tag">Lesson 03</span>
+  <h1>How Claude Code Works<br><small style="font-size:16px;font-weight:500;color:#666;">Claude Code 如何運作</small></h1>
+  <div class="lesson-sub">本節概念：Agentic Loop · Tools · Compaction · Permission Modes</div>
+  <a href="https://www.youtube.com/watch?v=6bs5b4FltCU" target="_blank" class="video-link">
+    <img src="https://img.youtube.com/vi/6bs5b4FltCU/mqdefault.jpg" alt="How Claude Code Works">
+    <div class="play-btn">
+      <div class="play-circle"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
+      <span class="play-label">前往 YouTube 觀看影片</span>
+    </div>
+  </a>
+
+  <h2>本節重點 Key Takeaways</h2>
+  <ol>
+    <li><strong>Agentic Loop（代理循環）</strong>：Prompt → 收集情境 → 呼叫模型 → 執行行動 → 驗證結果 → 未達標則循環。</li>
+    <li><strong>Tools（工具）</strong> 是 Agent 的核心骨架，讓 Claude 能「做事」而非只輸出文字。</li>
+    <li>情境視窗接近上限時，Claude 會自動 <strong>compact（壓縮）</strong>，可能遺失部分細節。</li>
+    <li>三種許可模式：預設（每次詢問）、Auto Accept（自動接受編輯）、Plan Mode（唯讀規劃）。</li>
+    <li>Claude Code 使用<strong>語意搜尋（Semantic Search）</strong>判斷何時呼叫哪個工具。</li>
+  </ol>
+
+  <h2>Agentic Loop 代理循環</h2>
+  <pre>使用者輸入 Prompt
+       ↓
+收集所需情境 (Context)
+       ↓
+呼叫 LLM（回傳文字或工具呼叫）
+       ↓
+執行行動（編輯檔案、執行指令…）
+       ↓
+驗證結果
+       ↓
+達標？→ Yes → 等待下一個 Prompt
+       → No  → 回到循環頂端</pre>
+
+  <h2>三種許可模式 Permission Modes</h2>
+  <table>
+    <tr><th>模式</th><th>說明</th><th>切換</th></tr>
+    <tr><td><strong>Default 預設</strong></td><td>每次操作前詢問許可</td><td>預設狀態</td></tr>
+    <tr><td><strong>Auto Accept</strong></td><td>自動接受檔案編輯；執行指令仍需確認</td><td>Shift + Tab</td></tr>
+    <tr><td><strong>Plan Mode</strong></td><td>僅使用唯讀工具，先規劃再執行</td><td>Shift + Tab（再切）</td></tr>
+  </table>
+
+  <h2>關鍵詞彙 Vocabulary</h2>
+  <table>
+    <tr><th>英文</th><th>中文</th><th>說明</th></tr>
+    <tr><td>Agentic Loop</td><td>代理循環</td><td>Claude 自主執行任務的反覆循環機制</td></tr>
+    <tr><td>Tool Call</td><td>工具呼叫</td><td>Claude 決定使用特定工具的行動</td></tr>
+    <tr><td>Compaction</td><td>壓縮</td><td>情境視窗接近上限時，自動摘要舊內容釋放空間</td></tr>
+    <tr><td>Semantic Search</td><td>語意搜尋</td><td>根據語義判斷何時呼叫哪個工具</td></tr>
+    <tr><td>Verification</td><td>驗證</td><td>Claude 確認執行結果是否達到 prompt 目標</td></tr>
+  </table>
+
+  <div class="cta-box">
+    <div class="cta-header">實作練習 Try It Now</div>
+    <ol class="cta-steps">
+      <li>啟動 Claude Code，連按 <code>Shift + Tab</code> 幾次，觀察三種模式如何切換</li>
+      <li>在 Default 模式下，請 Claude 修改某個檔案——注意它如何詢問你的許可</li>
+      <li>切換到 Auto Accept 模式，執行同樣的任務，比較流程有何不同</li>
+      <li>觀察工具呼叫列表，確認你能看出 Agentic Loop 的每一個步驟</li>
+    </ol>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════ 04 ═══ -->
+<section class="lesson" id="lesson04">
+  <span class="lesson-tag">Lesson 04</span>
+  <h1>Your First Claude Code Prompt<br><small style="font-size:16px;font-weight:500;color:#666;">第一個 Prompt</small></h1>
+  <div class="lesson-sub">本節概念：Prompt Writing · Plan Mode · Auto Accept</div>
+  <a href="https://www.youtube.com/watch?v=gbetp6D7J_Q" target="_blank" class="video-link">
+    <img src="https://img.youtube.com/vi/gbetp6D7J_Q/mqdefault.jpg" alt="Your first Claude Code prompt">
+    <div class="play-btn">
+      <div class="play-circle"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
+      <span class="play-label">前往 YouTube 觀看影片</span>
+    </div>
+  </a>
+
+  <h2>本節重點 Key Takeaways</h2>
+  <ol>
+    <li>用<strong>自然語言</strong>與 Claude Code 對話，如同對人類說話。</li>
+    <li><code>Shift + Tab</code> 切換模式：Auto Accept ↔ 手動確認 ↔ Plan Mode。</li>
+    <li><strong>Plan Mode</strong>：用唯讀工具分析程式碼庫 → 回傳詳細計畫 → 確認後才執行。</li>
+    <li>Prompt 原則：<strong>越具體越好</strong>，說清楚目標、現有限制、預期結果。</li>
+    <li>Plan Mode 的計畫可修改後再 Approve，是最佳的「開始執行前修正」節點。</li>
+  </ol>
+
+  <h2>Prompt 寫作技巧</h2>
+  <table>
+    <tr><th>做 ✅</th><th>不做 ❌</th></tr>
+    <tr><td>說明「我需要達成什麼」</td><td>只說「幫我改這個」</td></tr>
+    <tr><td>描述現有系統的限制與偏好</td><td>不說明使用的框架或風格</td></tr>
+    <tr><td>指定預期結果的樣子</td><td>留下模糊的成功標準</td></tr>
+    <tr><td>一次聚焦一個目標</td><td>把太多功能塞進一個 prompt</td></tr>
+  </table>
+
+  <h2>Plan Mode 使用流程</h2>
+  <pre>Shift + Tab → 進入 Plan Mode
+輸入詳細 Prompt（說清楚目標與限制）
+→ Claude 分析程式碼庫，返回計畫
+審視計畫 → 修改 → Approve → Claude 開始執行</pre>
+
+  <div class="example-box">
+    <div class="label">好的 Prompt 範例</div>
+    "My app needs a dark mode implemented across the entire app. Create a toggle switch on the header that allows user to toggle between light and dark mode. Find a good contrast color that works based on my existing light theme."
+    <br><br>
+    <strong>包含了：</strong>目標（dark mode）、位置（header toggle）、限制（配合現有 light theme）
+  </div>
+
+  <h2>關鍵詞彙 Vocabulary</h2>
+  <table>
+    <tr><th>英文</th><th>中文</th><th>說明</th></tr>
+    <tr><td>Plan Mode</td><td>規劃模式</td><td>唯讀分析，先給計畫再執行</td></tr>
+    <tr><td>Auto Accept</td><td>自動接受</td><td>自動核准所有檔案編輯</td></tr>
+    <tr><td>Approve</td><td>核准</td><td>確認 Plan Mode 的計畫並開始執行</td></tr>
+    <tr><td>Course Correct</td><td>修正方向</td><td>執行中途調整 Claude 的做法</td></tr>
+  </table>
+
+  <div class="cta-box">
+    <div class="cta-header">實作練習 Try It Now</div>
+    <ol class="cta-steps">
+      <li>想一個你想在專案裡實作的小功能（例如：加一個按鈕、新增 API endpoint）</li>
+      <li>先用一句模糊的話下 prompt（例如：「加個 dark mode」），觀察 Claude 的回應</li>
+      <li>按照本節技巧，重新寫一個具體 prompt：包含目標、位置、限制、預期樣子</li>
+      <li>進入 Plan Mode，貼入具體 prompt，比較計畫的詳細度有何差異</li>
+    </ol>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════ 05 ═══ -->
+<section class="lesson" id="lesson05">
+  <span class="lesson-tag">Lesson 05</span>
+  <h1>The CLAUDE.md File<br><small style="font-size:16px;font-weight:500;color:#666;">CLAUDE.md 持久記憶檔案</small></h1>
+  <div class="lesson-sub">本節概念：Persistent Memory · Hierarchy · /init</div>
+  <a href="https://www.youtube.com/watch?v=O0FGCxkHM-U" target="_blank" class="video-link">
+    <img src="https://img.youtube.com/vi/O0FGCxkHM-U/mqdefault.jpg" alt="The CLAUDE.md file">
+    <div class="play-btn">
+      <div class="play-circle"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
+      <span class="play-label">前往 YouTube 觀看影片</span>
+    </div>
+  </a>
+
+  <h2>本節重點 Key Takeaways</h2>
+  <ol>
+    <li><strong>CLAUDE.md = Claude Code 的持久記憶</strong>，每次 session 啟動時自動讀取。</li>
+    <li>沒有 CLAUDE.md 時，Claude 每次都要從頭理解程式碼庫，容易做出假設與錯誤。</li>
+    <li><code>/init</code> 指令：讓 Claude 根據你的程式碼庫自動生成初始 CLAUDE.md。</li>
+    <li>層級結構：<strong>專案級</strong>（根目錄，團隊共用）→ <strong>使用者級</strong>（個人設定，跨所有專案）。</li>
+    <li>最佳實踐：先不加，觀察哪些地方需要反覆糾正，再精簡加入。</li>
+  </ol>
+
+  <h2>CLAUDE.md 層級 Hierarchy</h2>
+  <pre>~/.claude/CLAUDE.md          ← 使用者級（個人偏好，跨所有專案）
+                                  只有你看得到
+
+/your-project/CLAUDE.md      ← 專案級（根目錄，check in 版本控制）
+                                  整個團隊共用</pre>
+
+  <h2>CLAUDE.md 建議填入內容</h2>
+  <pre>## Tech Stack 技術堆疊
+- Next.js 15 (App Router) / Tailwind CSS / Drizzle ORM
+
+## Commands 常用指令
+- dev: npm run dev  |  test: npm test  |  lint: npm run lint
+
+## Code Style 程式碼風格
+- 2 space indentation  |  Named exports only
+
+## Rules 規則
+- Use server actions instead of API routes</pre>
+
+  <div class="tip-box">
+    <div class="label">最佳實踐 Best Practice</div>
+    先不加 CLAUDE.md，觀察哪些地方需要反覆糾正，再把那些規則加進去。保持檔案精簡，只存放真正必要的資訊。
+  </div>
+
+  <h2>三個使用技巧</h2>
+  <ol>
+    <li>糾正 Claude 的行為後，告訴他：<strong>「把這個規則存進 CLAUDE.md」</strong></li>
+    <li>用 <code>@檔案路徑</code> 引用文件，讓 Claude 直接參考</li>
+    <li>從 <code>/init</code> 自動生成起點，再根據需要精簡</li>
+  </ol>
+
+  <h2>關鍵詞彙 Vocabulary</h2>
+  <table>
+    <tr><th>英文</th><th>中文</th><th>說明</th></tr>
+    <tr><td>CLAUDE.md</td><td>—</td><td>Claude Code 的持久記憶設定檔（Markdown 格式）</td></tr>
+    <tr><td>Persistent Memory</td><td>持久記憶</td><td>跨 session 保留的知識與設定</td></tr>
+    <tr><td>/init</td><td>—</td><td>讓 Claude 自動生成 CLAUDE.md 的指令</td></tr>
+    <tr><td>Project-level</td><td>專案級</td><td>放在根目錄，整個團隊共用</td></tr>
+    <tr><td>User-level</td><td>使用者級</td><td>放在個人設定資料夾，只有自己用</td></tr>
+  </table>
+
+  <div class="cta-box">
+    <div class="cta-header">實作練習 Try It Now</div>
+    <ol class="cta-steps">
+      <li>在你的專案根目錄，執行 <code>/init</code>，讓 Claude 自動生成初始 CLAUDE.md</li>
+      <li>檢視生成的內容，確認技術堆疊、指令、風格描述是否正確，手動補齊遺漏的部分</li>
+      <li>加入一條你自己的規則（例如縮排、命名習慣、禁止某種寫法）</li>
+      <li>關掉 session，重新開啟，輸入同樣的任務——確認 Claude 已直接套用你的設定</li>
+    </ol>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════ 06 ═══ -->
+<section class="lesson" id="lesson06">
+  <span class="lesson-tag">Lesson 06</span>
+  <h1>Explore → Plan → Code → Commit<br><small style="font-size:16px;font-weight:500;color:#666;">核心工作流程</small></h1>
+  <div class="lesson-sub">本節概念：Workflow · Plan Mode · Sub Agent · Commit</div>
+  <a href="https://www.youtube.com/watch?v=xJQuF02NAK8" target="_blank" class="video-link">
+    <img src="https://img.youtube.com/vi/xJQuF02NAK8/mqdefault.jpg" alt="The Explore → Plan → Code → Commit workflow">
+    <div class="play-btn">
+      <div class="play-circle"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
+      <span class="play-label">前往 YouTube 觀看影片</span>
+    </div>
+  </a>
+
+  <h2>本節重點 Key Takeaways</h2>
+  <ol>
+    <li><strong>核心工作流程</strong>：Explore → Plan → Code → Commit，不要直接跳到 Code。</li>
+    <li>多數人直接下指令產生程式碼，導致大量事後修正；<strong>計畫確認前才是最佳修正節點</strong>。</li>
+    <li>Plan Mode 可同時完成 Explore + Plan，是進入前兩步最快的方式。</li>
+    <li>為 Claude 提供<strong>可驗證的成功標準</strong>（測試套件、Claude in Chrome），讓他自行確認完成。</li>
+    <li>Commit 前用 sub agent 做 code review，再讓 Claude 生成 commit message。</li>
+  </ol>
+
+  <h2>工作流程 Workflow</h2>
+  <div class="workflow">
+    <div class="wf-step"><span class="en">Explore</span><span class="zh">探索</span></div>
+    <div class="wf-step"><span class="en">Plan</span><span class="zh">規劃 ✅修正點</span></div>
+    <div class="wf-step"><span class="en">Code</span><span class="zh">編碼</span></div>
+    <div class="wf-step"><span class="en">Commit</span><span class="zh">提交</span></div>
+  </div>
+  <div class="note-box">
+    <strong>備注：名稱差異</strong><br>
+    本講義依課程影片使用「<strong>Code</strong>」；Anthropic 官方文件（code.claude.com）將同一步驟標示為「<strong>Implement</strong>」。兩者指相同流程，「Implement」語意較廣，泛指所有實作工作——不限於程式設計，修改設定、資料遷移、撰寫文件等皆屬之。
+  </div>
+
+  <h3>Step 1 &amp; 2 — Explore + Plan（用 Plan Mode）</h3>
+  <pre>Shift + Tab → 進入 Plan Mode → 輸入目標 Prompt
+→ Claude 讀取檔案、搜尋文件、提問澄清
+→ 回傳詳細計畫 → 審視 → 修改 → Approve</pre>
+
+  <h3>Step 3 — Code</h3>
+  <p>讓 Claude 依計畫逐步執行；隨時 course-correct；把反覆修正的規則存進 CLAUDE.md。</p>
+
+  <h3>Step 4 — Commit</h3>
+  <pre>1. 用 sub agent 做 code review
+2. 讓 Claude 生成 commit message
+3. Push → 開始下一個功能</pre>
+
+  <h2>讓 Claude 自我驗證的工具</h2>
+  <table>
+    <tr><th>工具</th><th>用途</th></tr>
+    <tr><td>測試套件（Test Suite）</td><td>Claude 跑測試確認功能正確</td></tr>
+    <tr><td>Claude in Chrome 擴充</td><td>Claude 控制瀏覽器實際測試 UI</td></tr>
+    <tr><td>Lint / Type Check</td><td>確保程式碼品質</td></tr>
+  </table>
+
+  <h2>關鍵詞彙 Vocabulary</h2>
+  <table>
+    <tr><th>英文</th><th>中文</th><th>說明</th></tr>
+    <tr><td>Explore</td><td>探索</td><td>了解程式碼庫現狀，收集情境</td></tr>
+    <tr><td>Course Correct</td><td>修正方向</td><td>執行過程中調整 Claude 的做法</td></tr>
+    <tr><td>Sub Agent</td><td>子代理程式</td><td>獨立執行特定任務的 Claude 實例</td></tr>
+    <tr><td>Commit Message</td><td>提交訊息</td><td>Git commit 的描述文字</td></tr>
+  </table>
+
+  <div class="cta-box">
+    <div class="cta-header">實作練習 Try It Now</div>
+    <ol class="cta-steps">
+      <li>選一個你想實作的小功能，進入 Plan Mode，輸入完整 prompt</li>
+      <li>收到計畫後，找出 1–2 個你想調整的地方，要求 Claude 修改計畫</li>
+      <li>確認計畫符合預期後點 Approve，讓 Claude 開始執行</li>
+      <li>功能完成後，請 Claude 用 sub agent 做 code review，再生成 commit message 並提交</li>
+    </ol>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════ 07 ═══ -->
+<section class="lesson" id="lesson07">
+  <span class="lesson-tag">Lesson 07</span>
+  <h1>Context Management<br><small style="font-size:16px;font-weight:500;color:#666;">情境視窗管理</small></h1>
+  <div class="lesson-sub">本節概念：/compact · /clear · /context · Sub Agent · Token</div>
+  <a href="https://www.youtube.com/watch?v=eW3oTyfeWZ0" target="_blank" class="video-link">
+    <img src="https://img.youtube.com/vi/eW3oTyfeWZ0/mqdefault.jpg" alt="Context Management in Claude Code">
+    <div class="play-btn">
+      <div class="play-circle"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
+      <span class="play-label">前往 YouTube 觀看影片</span>
+    </div>
+  </a>
+
+  <h2>本節重點 Key Takeaways</h2>
+  <ol>
+    <li><strong>Context Window = Claude 的工作記憶</strong>，所有輸入、工具執行結果、對話都佔空間。</li>
+    <li><code>/compact</code>：壓縮對話並保留摘要，繼續當前功能開發時使用。</li>
+    <li><code>/clear</code>：完全清除，開始全新任務或新功能時使用。</li>
+    <li><code>/context</code>：查看目前情境使用狀況、佔用分佈與視覺化圖表。</li>
+    <li>減少消耗的技巧：提示詞要具體、關掉不用的 MCP server、善用 sub agent。</li>
+  </ol>
+
+  <h2>指令速查 Commands</h2>
+  <div class="cmd-cards">
+    <div class="cmd-card"><div class="cmd">/compact</div><div class="desc">壓縮對話，保留摘要<br>繼續同一功能用</div></div>
+    <div class="cmd-card"><div class="cmd">/clear</div><div class="desc">完全清除<br>開始新功能用</div></div>
+    <div class="cmd-card"><div class="cmd">/context</div><div class="desc">查看 context<br>使用狀況</div></div>
+  </div>
+
+  <h2>compact vs clear 決策樹</h2>
+  <pre>還在做同一個功能？
+  Yes → /compact（壓縮，保留摘要繼續工作）
+  No  → /clear（清除，全新開始避免舊對話影響）</pre>
+
+  <h2>減少 Context 消耗的 5 個技巧</h2>
+  <ol>
+    <li><strong>提示詞要具體</strong>：模糊 prompt 迫使 Claude 探索更多檔案</li>
+    <li><strong>停用不需要的 MCP server</strong>：每個 server 的工具定義都佔 context</li>
+    <li><strong>用 sub agent 委派任務</strong>：獨立 context，只回傳摘要給主 agent</li>
+    <li><strong>把常用規則放進 CLAUDE.md</strong>：不需要 Claude 每次重新探索</li>
+    <li><strong>定期 /compact</strong>：大 session 中途就壓縮，避免細節遺失</li>
+  </ol>
+
+  <h2>關鍵詞彙 Vocabulary</h2>
+  <table>
+    <tr><th>英文</th><th>中文</th><th>說明</th></tr>
+    <tr><td>Context Window</td><td>情境視窗</td><td>Claude 的工作記憶容量</td></tr>
+    <tr><td>Compaction</td><td>壓縮</td><td>自動或手動摘要舊內容，釋放空間</td></tr>
+    <tr><td>Sub Agent</td><td>子代理程式</td><td>有獨立 context 的 Claude 實例，只回傳結果</td></tr>
+    <tr><td>Token</td><td>—</td><td>衡量 context 佔用量的單位</td></tr>
+  </table>
+
+  <div class="cta-box">
+    <div class="cta-header">實作練習 Try It Now</div>
+    <ol class="cta-steps">
+      <li>開啟一段正在進行的 session，執行 <code>/context</code>，看看哪些類別佔用最多空間</li>
+      <li>繼續做一段開發工作，再次執行 <code>/context</code>，觀察數字的變化</li>
+      <li>在功能還沒做完但 context 開始偏高時，執行 <code>/compact</code>，確認摘要是否保留了關鍵資訊</li>
+      <li>下次開始新功能前，養成先執行 <code>/clear</code> 的習慣，感受乾淨 context 帶來的差異</li>
+    </ol>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════ 08 ═══ -->
+<section class="lesson" id="lesson08">
+  <span class="lesson-tag">Lesson 08</span>
+  <h1>MCP in Claude Code<br><small style="font-size:16px;font-weight:500;color:#666;">整合外部工具</small></h1>
+  <div class="lesson-sub">本節概念：Model Context Protocol · HTTP Server · stdio · Scope</div>
+  <a href="https://www.youtube.com/watch?v=kkBFmwkDzdo" target="_blank" class="video-link">
+    <img src="https://img.youtube.com/vi/kkBFmwkDzdo/mqdefault.jpg" alt="MCP in Claude Code">
+    <div class="play-btn">
+      <div class="play-circle"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
+      <span class="play-label">前往 YouTube 觀看影片</span>
+    </div>
+  </a>
+
+  <h2>本節重點 Key Takeaways</h2>
+  <ol>
+    <li><strong>MCP（Model Context Protocol）</strong> = 讓 Claude Code 連接外部工具與資料來源的開放標準。</li>
+    <li>兩種 server 類型：<strong>HTTP</strong>（遠端服務，由服務商代管）、<strong>stdio</strong>（本機程式）。</li>
+    <li>三種 scope：local（本機本專案）、user（個人跨專案）、project（.mcp.json，團隊共用）。</li>
+    <li>MCP server 的工具定義<strong>佔用 context window</strong>，不用的要用 <code>/mcp</code> 停用。</li>
+    <li>工具佔用超過 10% context 時，Claude 自動切換 <strong>tool search mode</strong>（效果較差）。</li>
+  </ol>
+
+  <h2>三種 Scope（作用範圍）</h2>
+  <div class="scope-cards">
+    <div class="scope-card local"><div class="label">Local 本機本專案</div>只有你，只在這個專案有效</div>
+    <div class="scope-card user"><div class="label">User 使用者</div>只有你，跨所有專案都可用</div>
+    <div class="scope-card proj"><div class="label">Project 專案級</div>整個團隊共用，透過 <code>.mcp.json</code> check in</div>
+  </div>
+
+  <h2>常用操作</h2>
+  <pre># 新增 MCP server
+claude mcp add [server-name]
+
+# 在 session 內管理（查看狀態、停用）
+/mcp</pre>
+
+  <h2>MCP vs CLI 選擇指南</h2>
+  <table>
+    <tr><th>情境</th><th>建議做法</th><th>原因</th></tr>
+    <tr><td>GitHub 操作</td><td>用 <code>gh</code> CLI</td><td>更節省 context</td></tr>
+    <tr><td>AWS 操作</td><td>用 <code>aws</code> CLI</td><td>更節省 context</td></tr>
+    <tr><td>Notion / Linear（無 CLI）</td><td>用 MCP server</td><td>唯一選項</td></tr>
+    <tr><td>團隊統一設定</td><td>project scope + <code>.mcp.json</code></td><td>自動同步給所有人</td></tr>
+  </table>
+
+  <h2>關鍵詞彙 Vocabulary</h2>
+  <table>
+    <tr><th>英文</th><th>中文</th><th>說明</th></tr>
+    <tr><td>MCP</td><td>Model Context Protocol</td><td>連接外部工具的開放標準</td></tr>
+    <tr><td>HTTP Server</td><td>HTTP 伺服器</td><td>遠端服務提供的 MCP server</td></tr>
+    <tr><td>stdio Server</td><td>標準 I/O 伺服器</td><td>在本機執行的 MCP server</td></tr>
+    <tr><td>Tool Search Mode</td><td>工具搜尋模式</td><td>工具太多時的自動備用模式，效果較差</td></tr>
+    <tr><td>.mcp.json</td><td>—</td><td>存放 project scope MCP 設定的檔案</td></tr>
+  </table>
+
+  <div class="cta-box">
+    <div class="cta-header">實作練習 Try It Now</div>
+    <ol class="cta-steps">
+      <li>在 session 中執行 <code>/mcp</code>，確認目前有哪些 server 連接，停用你現在不需要的</li>
+      <li>選一個與你專案相關的 MCP server 安裝（推薦：Context7 取得最新套件文件）</li>
+      <li>安裝後，要求 Claude 用這個工具完成一個真實任務，觀察它如何呼叫外部資料</li>
+      <li>如果你的團隊共用同一個 repo，建立 <code>.mcp.json</code> 並把 server 設定 check in</li>
+    </ol>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════ 09 ═══ -->
+<section class="lesson" id="lesson09">
+  <span class="lesson-tag">Lesson 09</span>
+  <h1>Hooks in Claude Code<br><small style="font-size:16px;font-weight:500;color:#666;">確定性自動化</small></h1>
+  <div class="lesson-sub">本節概念：Deterministic · Hook Events · Exit Code · settings.json</div>
+  <a href="https://www.youtube.com/watch?v=IkaPHiMDazM" target="_blank" class="video-link">
+    <img src="https://img.youtube.com/vi/IkaPHiMDazM/mqdefault.jpg" alt="Hooks in Claude Code">
+    <div class="play-btn">
+      <div class="play-circle"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
+      <span class="play-label">前往 YouTube 觀看影片</span>
+    </div>
+  </a>
+
+  <h2>本節重點 Key Takeaways</h2>
+  <ol>
+    <li><strong>Hooks = 確定性執行的自動化</strong>，不像 CLAUDE.md 的「建議」，Hooks 每次都一定執行。</li>
+    <li>常見用途：自動格式化（prettier / gofmt）、記錄指令、封鎖危險操作、任務完成通知。</li>
+    <li>設定在 <strong>settings.json</strong>，可 check in 版本控制讓整個團隊共用相同規則。</li>
+    <li>Exit code 規則：<code>0</code> = 繼續執行，<code>2</code> = 阻擋並把 stderr 回傳給 Claude。</li>
+    <li>核心原則：某件事必須<strong>每次都發生</strong> → 放進 Hook，不要放進 prompt 或 CLAUDE.md。</li>
+  </ol>
+
+  <div class="key-rule">「如果某件事必須每次都發生，不要放進 prompt，放進 Hook。」</div>
+
+  <h2>5 種 Hook 事件</h2>
+  <table>
+    <tr><th>事件</th><th>觸發時機</th><th>常見用途</th></tr>
+    <tr><td><code>UserPromptSubmit</code></td><td>你送出 prompt 時（Claude 處理前）</td><td>前置驗證、記錄</td></tr>
+    <tr><td><code>PreToolUse</code></td><td>工具呼叫<strong>前</strong></td><td>封鎖危險操作</td></tr>
+    <tr><td><code>PostToolUse</code></td><td>工具呼叫<strong>後</strong></td><td>自動格式化、記錄</td></tr>
+    <tr><td><code>Notification</code></td><td>Claude 發送通知時</td><td>轉發到 Slack / 系統通知</td></tr>
+    <tr><td><code>Stop</code></td><td>Claude 完成回應時</td><td>任務完成通知</td></tr>
+  </table>
+
+  <h2>Exit Code 規則</h2>
+  <div class="exit-codes">
+    <div class="exit-card ok"><div class="code">Exit 0</div>繼續執行（proceed）<br><span style="color:#555;font-size:12px;">工具呼叫正常進行</span></div>
+    <div class="exit-card bad"><div class="code">Exit 2</div>阻擋（block）<br><span style="color:#555;font-size:12px;">stderr 回傳給 Claude，Claude 知道原因後調整</span></div>
+  </div>
+
+  <h2>最常用：自動格式化 PostToolUse Hook</h2>
+  <pre>{
+  "hooks": {
+    "PostToolUse": [{
+      "matcher": "Edit|MultiEdit",
+      "command": "bash -c 'ext=${TOOL_INPUT_FILE##*.};
+        case $ext in
+          ts|tsx) prettier --write $TOOL_INPUT_FILE ;;
+          go)     gofmt -w $TOOL_INPUT_FILE ;;
+          py)     ruff format $TOOL_INPUT_FILE ;;
+        esac'"
+    }]
+  }
+}</pre>
+
+  <h2>CLAUDE.md vs Hooks 比較</h2>
+  <table>
+    <tr><th></th><th>CLAUDE.md</th><th>Hooks</th></tr>
+    <tr><td><strong>執行方式</strong></td><td>建議（Claude 決定是否遵循）</td><td>確定性（每次都執行）</td></tr>
+    <tr><td><strong>適合場景</strong></td><td>偏好、風格、技術堆疊說明</td><td>格式化、封鎖、通知</td></tr>
+    <tr><td><strong>設定位置</strong></td><td>根目錄 Markdown 檔</td><td>settings.json</td></tr>
+    <tr><td><strong>可程式化</strong></td><td>否</td><td>是（shell script）</td></tr>
+  </table>
+
+  <h2>關鍵詞彙 Vocabulary</h2>
+  <table>
+    <tr><th>英文</th><th>中文</th><th>說明</th></tr>
+    <tr><td>Hook</td><td>鉤子</td><td>在特定事件觸發時確定性執行的命令</td></tr>
+    <tr><td>Deterministic</td><td>確定性的</td><td>每次都保證執行，無例外</td></tr>
+    <tr><td>Matcher</td><td>匹配器</td><td>指定 Hook 作用於哪個工具</td></tr>
+    <tr><td>Exit Code</td><td>退出碼</td><td>0 = 繼續，2 = 阻擋</td></tr>
+    <tr><td>PreToolUse</td><td>工具呼叫前</td><td>可用來驗證或阻擋某些操作</td></tr>
+    <tr><td>PostToolUse</td><td>工具呼叫後</td><td>常用於格式化、記錄</td></tr>
+  </table>
+
+  <div class="cta-box">
+    <div class="cta-header">實作練習 Try It Now</div>
+    <ol class="cta-steps">
+      <li>在 settings.json 加入一個 PostToolUse hook，讓每次 Claude 編輯檔案後自動執行格式化（參考本節的範例 JSON）</li>
+      <li>請 Claude 修改一個檔案，確認 hook 有自動觸發、格式化有實際執行</li>
+      <li>加入一個 PreToolUse hook，封鎖一個你覺得危險的操作（例如：包含 <code>rm -rf</code> 的指令）</li>
+      <li>盤點你的工作流程中有哪些「一定要做」的步驟，把它們都移進 hook——讓規則不再依賴你記得說</li>
+    </ol>
+  </div>
+</section>
+
+
+</main>
+</div>
+
+<script>
+
+// ── Hamburger menu ──
+const hamburger = document.querySelector('.hamburger');
+const sidebarEl = document.querySelector('.sidebar');
+const overlay = document.querySelector('.sidebar-overlay');
+
+hamburger?.addEventListener('click', () => {
+  sidebarEl.classList.toggle('open');
+  overlay.classList.toggle('visible');
+});
+overlay?.addEventListener('click', () => {
+  sidebarEl.classList.remove('open');
+  overlay.classList.remove('visible');
+});
+document.querySelectorAll('.nav-item a').forEach(link => {
+  link.addEventListener('click', () => {
+    if (window.innerWidth <= 768) {
+      sidebarEl.classList.remove('open');
+      overlay.classList.remove('visible');
+    }
+  });
+});
+
+// Highlight active nav item on scroll
+const sections = document.querySelectorAll('.lesson');
+const navLinks = document.querySelectorAll('.nav-item a');
+
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      navLinks.forEach(link => link.classList.remove('active'));
+      const active = document.querySelector(`.nav-item a[href="#${entry.target.id}"]`);
+      if (active) active.classList.add('active');
+    }
+  });
+}, { threshold: 0.25 });
+
+sections.forEach(s => observer.observe(s));
+
+// Smooth scroll
+navLinks.forEach(link => {
+  link.addEventListener('click', e => {
+    e.preventDefault();
+    const target = document.querySelector(link.getAttribute('href'));
+    if (target) target.scrollIntoView({ behavior: 'smooth' });
+  });
+});
+</script>
+</body>
+</html>

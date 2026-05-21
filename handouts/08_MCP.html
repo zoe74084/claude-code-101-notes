@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>08 | MCP in Claude Code</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", sans-serif; background: #f5f5f0; color: #1a1a1a; font-size: 15px; line-height: 1.7; }
+  .page { max-width: 860px; margin: 0 auto; padding: 40px 32px; background: #fff; min-height: 100vh; }
+  .course-tag { font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: #b45309; background: #fef3c7; padding: 3px 10px; border-radius: 99px; display: inline-block; margin-bottom: 12px; }
+  h1 { font-size: 26px; font-weight: 800; color: #111; border-bottom: 3px solid #d97706; padding-bottom: 10px; margin-bottom: 6px; }
+  .subtitle { font-size: 13px; color: #888; margin-bottom: 32px; }
+  h2 { font-size: 15px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #b45309; margin: 28px 0 12px; display: flex; align-items: center; gap: 8px; }
+  h2::before { content: ""; display: block; width: 4px; height: 16px; background: #d97706; border-radius: 2px; }
+  h3 { font-size: 14px; font-weight: 700; color: #333; margin: 16px 0 6px; }
+  ol, ul { padding-left: 20px; }
+  li { margin-bottom: 6px; }
+  li strong { color: #111; }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 14px; }
+  th { background: #fef3c7; color: #92400e; font-weight: 700; padding: 8px 12px; text-align: left; border: 1px solid #fde68a; }
+  td { padding: 7px 12px; border: 1px solid #e5e7eb; vertical-align: top; }
+  tr:nth-child(even) td { background: #fffbeb; }
+  pre, code { background: #f4f4f0; font-family: "SF Mono", "Fira Code", monospace; font-size: 13px; border-radius: 4px; }
+  pre { padding: 14px 16px; overflow-x: auto; margin: 10px 0; border-left: 3px solid #d97706; line-height: 1.9; }
+  code { padding: 1px 5px; }
+  .scope-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 12px 0; }
+  .scope-card { border-radius: 8px; padding: 14px; font-size: 13px; border: 1px solid #e5e7eb; }
+  .scope-card.local { background: #fef9f0; border-color: #fde68a; }
+  .scope-card.user  { background: #f0f9ff; border-color: #bae6fd; }
+  .scope-card.proj  { background: #f0fdf4; border-color: #bbf7d0; }
+  .scope-card .label { font-weight: 800; font-size: 14px; margin-bottom: 4px; }
+  .scope-card.local .label { color: #92400e; }
+  .scope-card.user  .label { color: #0369a1; }
+  .scope-card.proj  .label { color: #15803d; }
+  .notes-section { margin-top: 32px; border-top: 2px dashed #d97706; padding-top: 20px; }
+  .note-line { border-bottom: 1px solid #e5e7eb; height: 36px; }
+  .tag-en { font-size: 11px; color: #999; font-weight: 400; margin-left: 6px; }
+  @media print { body { background: #fff; font-size: 13px; } .page { padding: 20px; } }
+</style>
+</head>
+<body>
+<div class="page">
+  <span class="course-tag">Claude Code 101</span>
+  <h1>08 | MCP in Claude Code<span class="tag-en">整合外部工具</span></h1>
+  <div class="subtitle">Lesson 8 of 9</div>
+
+  <h2>本節重點 <span class="tag-en">Key Takeaways</span></h2>
+  <ol>
+    <li><strong>MCP（Model Context Protocol）</strong> = 讓 Claude Code 連接外部工具與資料來源的開放標準。</li>
+    <li>兩種 server 類型：<strong>HTTP</strong>（遠端服務，由服務商代管）、<strong>stdio</strong>（本機程式）。</li>
+    <li>三種 scope：local（本機本專案）、user（個人跨專案）、project（MCP.json，團隊共用）。</li>
+    <li>MCP server 的工具定義<strong>佔用 context window</strong>，不用的要用 <code>/mcp</code> 停用。</li>
+    <li>工具佔用超過 10% context 時，Claude 自動切換 <strong>tool search mode</strong>（效果較差）。</li>
+  </ol>
+
+  <h2>三種 Scope（作用範圍）</h2>
+  <div class="scope-cards">
+    <div class="scope-card local">
+      <div class="label">Local 本機本專案</div>
+      只有你，只在這個專案有效
+    </div>
+    <div class="scope-card user">
+      <div class="label">User 使用者</div>
+      只有你，跨所有專案都可用
+    </div>
+    <div class="scope-card proj">
+      <div class="label">Project 專案級</div>
+      整個團隊共用<br>透過 <code>.mcp.json</code> check in
+    </div>
+  </div>
+
+  <h2>常用操作 <span class="tag-en">Commands</span></h2>
+  <pre># 新增 MCP server
+claude mcp add [server-name]
+
+# 在 session 內管理（查看狀態、停用）
+/mcp</pre>
+
+  <h2>MCP vs CLI 選擇指南</h2>
+  <table>
+    <tr><th>情境</th><th>建議做法</th><th>原因</th></tr>
+    <tr><td>GitHub 操作</td><td>用 <code>gh</code> CLI</td><td>更節省 context</td></tr>
+    <tr><td>AWS 操作</td><td>用 <code>aws</code> CLI</td><td>更節省 context</td></tr>
+    <tr><td>Notion / Linear（無 CLI）</td><td>用 MCP server</td><td>唯一選項</td></tr>
+    <tr><td>團隊統一設定</td><td>project scope + <code>.mcp.json</code></td><td>自動同步給所有人</td></tr>
+  </table>
+
+  <h2>推薦 MCP Server 範例</h2>
+  <table>
+    <tr><th>MCP Server</th><th>用途</th></tr>
+    <tr><td>Linear</td><td>拉取專案管理 issue 詳情</td></tr>
+    <tr><td>Context7</td><td>取得最新依賴套件文件</td></tr>
+    <tr><td>claude.com/connectors</td><td>數百種連接器可選</td></tr>
+  </table>
+
+  <h2>關鍵詞彙 <span class="tag-en">Vocabulary</span></h2>
+  <table>
+    <tr><th>英文</th><th>中文</th><th>說明</th></tr>
+    <tr><td>MCP</td><td>Model Context Protocol</td><td>連接外部工具的開放標準</td></tr>
+    <tr><td>HTTP Server</td><td>HTTP 伺服器</td><td>遠端服務提供的 MCP server</td></tr>
+    <tr><td>stdio Server</td><td>標準 I/O 伺服器</td><td>在本機執行的 MCP server</td></tr>
+    <tr><td>Tool Search Mode</td><td>工具搜尋模式</td><td>工具太多時的自動備用模式（效果較差）</td></tr>
+    <tr><td>.mcp.json</td><td>—</td><td>存放 project scope MCP 設定的檔案</td></tr>
+  </table>
+
+  <div class="notes-section">
+    <h2>我的筆記 <span class="tag-en">My Notes</span></h2>
+    <div class="note-line"></div><div class="note-line"></div>
+    <div class="note-line"></div><div class="note-line"></div>
+    <div class="note-line"></div><div class="note-line"></div>
+  </div>
+</div>
+</body>
+</html>
